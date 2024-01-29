@@ -87,6 +87,10 @@ abstract class GenericOAuth2ResourceOwner extends AbstractResourceOwner
      */
     public function getAccessToken(HttpRequest $request, $redirectUri, array $extraParameters = [])
     {
+        if (!empty($this->bag->get('app.azure_internal_url')) && !empty($this->bag->get('app.azure_external_url'))) {
+            $redirectUri = str_replace($this->bag->get('app.azure_internal_url'), $this->bag->get('app.azure_external_url'), $redirectUri);
+        }
+
         OAuthErrorHandler::handleOAuthError($request);
 
         $parameters = array_merge([

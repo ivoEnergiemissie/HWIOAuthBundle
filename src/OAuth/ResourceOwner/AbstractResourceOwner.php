@@ -18,6 +18,7 @@ use HWI\Bundle\OAuthBundle\OAuth\Response\PathUserResponse;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\OAuth\State\State;
 use HWI\Bundle\OAuthBundle\OAuth\StateInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\Exception\JsonException;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\OptionsResolver\Exception\AccessException;
@@ -49,6 +50,7 @@ abstract class AbstractResourceOwner implements ResourceOwnerInterface
     protected string $name;
     protected StateInterface $state;
     protected RequestDataStorageInterface $storage;
+    protected ParameterBagInterface $bag;
     private bool $stateLoaded = false;
 
     /**
@@ -60,12 +62,14 @@ abstract class AbstractResourceOwner implements ResourceOwnerInterface
         HttpUtils $httpUtils,
         array $options,
         string $name,
-        RequestDataStorageInterface $storage
+        RequestDataStorageInterface $storage,
+        ParameterBagInterface $bag
     ) {
         $this->httpClient = $httpClient;
         $this->httpUtils = $httpUtils;
         $this->name = $name;
         $this->storage = $storage;
+        $this->bag = $bag;
 
         if (!empty($options['paths'])) {
             $this->addPaths($options['paths']);

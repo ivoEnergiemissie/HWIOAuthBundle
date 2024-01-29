@@ -56,6 +56,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
             service('security.http_utils'),
             service('security.authorization_checker'),
             service('security.firewall.map'),
+            service('parameter_bag'),
             '%hwi_oauth.connect%',
             '%hwi_oauth.grant_rule%',
         ]);

@@ -15,6 +15,7 @@ use HWI\Bundle\OAuthBundle\OAuth\ResourceOwnerInterface;
 use HWI\Bundle\OAuthBundle\OAuth\State\State;
 use HWI\Bundle\OAuthBundle\Security\Http\ResourceOwnerMapInterface;
 use Symfony\Bundle\SecurityBundle\Security\FirewallMap;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Http\HttpUtils;
@@ -35,6 +36,7 @@ final class OAuthUtils
     private HttpUtils $httpUtils;
     private AuthorizationCheckerInterface $authorizationChecker;
     private FirewallMap $firewallMap;
+    private ParameterBagInterface $bag;
 
     /**
      * @var array<string, ResourceOwnerMapInterface>
@@ -45,12 +47,14 @@ final class OAuthUtils
         HttpUtils $httpUtils,
         AuthorizationCheckerInterface $authorizationChecker,
         FirewallMap $firewallMap,
+        ParameterBagInterface $bag,
         bool $connect,
         string $grantRule
     ) {
         $this->httpUtils = $httpUtils;
         $this->authorizationChecker = $authorizationChecker;
         $this->firewallMap = $firewallMap;
+        $this->bag = $bag;
         $this->connect = $connect;
         $this->grantRule = $grantRule;
     }
@@ -87,6 +91,10 @@ final class OAuthUtils
             }
         }
 
+        if (!empty($this->bag->get('app.azure_internal_url')) && !empty($this->bag->get('app.azure_external_url'))) {
+            $redirectUrl = str_replace($this->bag->get('app.azure_internal_url'), $this->bag->get('app.azure_external_url'), $redirectUrl);
+        }
+
         if ($request->query->has('state')) {
             $this->addQueryParameterToState($request->query->get('state'), $resourceOwner);
         }
@@ -118,6 +126,10 @@ final class OAuthUtils
         $request->attributes->set('service', $name);
 
         $url = $this->httpUtils->generateUri($request, 'hwi_oauth_service_redirect');
+
+        if (!empty($this->bag->get('app.azure_internal_url')) && !empty($this->bag->get('app.azure_external_url'))) {
+            $url = str_replace($this->bag->get('app.azure_internal_url'), $this->bag->get('app.azure_external_url'), $url);
+        }
 
         if ($request->query->has('state')) {
             $data = ['state' => $request->query->all()['state']];
